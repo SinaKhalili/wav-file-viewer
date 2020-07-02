@@ -1,0 +1,10 @@
+* Making a .wav
+** Choosing a GUI framework
+*** GTK+ <-- We'll be using this
+*** QT 
+*** 
+** Making a Makefile 
+   To compile gtk you need the gtk headers, which you can install with
+   ` apt install libgtk-3-dev ` 
+   You also need to include its path in gcc, which you can use an inline pkg-config command for
+   
