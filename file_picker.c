@@ -38,7 +38,7 @@ gboolean draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data) {
       if(curr_step < mid_width)
         percentage_distance *= (curr_step/mid_width); /*Fading in*/
       else
-        percentage_distance *= (mid_width/curr_step); /*Fading out*/
+        percentage_distance *= 2 - (curr_step/mid_width); /*Fading out*/
 
       value = (percentage_distance * (mid_height)) + (mid_height);
     }
@@ -47,7 +47,7 @@ gboolean draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data) {
       if(curr_step < mid_width)
         percentage_distance *= (curr_step/mid_width); /*Fading in*/
       else
-        percentage_distance *= (mid_width/curr_step); /*Fading out*/
+        percentage_distance *= 2 - (curr_step/mid_width); /*Fading out*/
 
       value = (mid_height) - (percentage_distance * (mid_height));
     }
