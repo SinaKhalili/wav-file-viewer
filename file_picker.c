@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include<stdio.h>
 #include<gmodule.h>
 #include<gtk/gtk.h>
@@ -10,6 +11,8 @@ typedef struct window_app_t {
 } window_app_t;
 
 gboolean draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data) {
+  char *filename = data;
+  wav_file_t wav_file = parse_wav_file(filename);
   guint width, height;
   GdkRGBA color;
   GtkStyleContext *context;
@@ -21,17 +24,37 @@ gboolean draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data) {
 
   gtk_render_background(context, cr, 0, 0, width, height);
 
-  /* cairo_arc(cr, */
-  /*           width / 2.0, height / 2.0, */
-  /*           MIN (width, height) / 2.0, */
-  /*           0, 2 * G_PI); */
+  float step_size = width / (float)wav_file.num_samples;
+  float mid_height = height/2;
+  float mid_width = width/2;
+  printf("Step size: %f", step_size);
+  cairo_move_to(cr, 0, mid_height);
+  float curr_step = 0;
 
-  cairo_move_to(cr, width/2, height);
-  cairo_line_to(cr, 0, height/2);
-  cairo_line_to(cr, width/2, height/2);
-  cairo_line_to(cr, width/2, 0);
-  cairo_line_to(cr, width, height/2);
-  cairo_set_line_width(cr, 1);
+  for(int i = 0; i < wav_file.num_samples; i++){
+    float value;
+    if(wav_file.data[i] >= 0){
+      float percentage_distance = (float) wav_file.data[i] / 32768.0;
+      if(curr_step < mid_width){
+        percentage_distance *= (curr_step/mid_width); /*Fading out*/
+      } else {
+        percentage_distance *= (mid_width/curr_step); /*Fading out*/
+      }
+      value = (percentage_distance * (mid_height)) + (mid_height);
+    } else {
+      float percentage_distance = (float) wav_file.data[i] / -32767.0;
+      if(curr_step < mid_width){
+        percentage_distance *= (curr_step/mid_width); /*Fading out*/
+      } else {
+        percentage_distance *= (mid_width/curr_step); /*Fading out*/
+      }
+      value = (mid_height) - (percentage_distance * (mid_height));
+    }
+    cairo_line_to(cr, curr_step, value);
+    curr_step += step_size;
+  }
+
+  cairo_set_line_width(cr, 1.5);
 
   gtk_style_context_get_color(context,
                               gtk_style_context_get_state(context),
@@ -59,14 +82,24 @@ static void create_new_wave_window(GtkApplication* app, char* filename) {
   gtk_container_add(GTK_CONTAINER(window_new), vbox);
 
   wav_file_t wav_file = parse_wav_file(filename);
-  printf("Number of data channels: %d \n", wav_file.num_channels);
+  if(wav_file.error){
+    printf("Error: Parsing .wav file failed\n");
+    return;
+  }
 
-  instruction_label = gtk_label_new(filename); /* label is just the filename */
+  char *sample_label;
+  asprintf(&sample_label,
+           " Viewing file: %s \n Number of samples: %d \n Max sample: %d (in 16 bit signed int)",
+           filename,
+           wav_file.num_samples,
+           wav_file.max);
+
+  instruction_label = gtk_label_new(sample_label);
   gtk_box_pack_start(GTK_BOX(vbox), instruction_label, TRUE, TRUE, 0);
 
   drawing_area = gtk_drawing_area_new();
-  gtk_widget_set_size_request(drawing_area, 100, 100);
-  g_signal_connect(G_OBJECT(drawing_area), "draw", G_CALLBACK(draw_callback), NULL);
+  gtk_widget_set_size_request(drawing_area, 1000, 200);
+  g_signal_connect(G_OBJECT(drawing_area), "draw", G_CALLBACK(draw_callback), filename);
 
   gtk_box_pack_start(GTK_BOX(vbox), drawing_area, TRUE, TRUE, 0);
 
@@ -121,7 +154,12 @@ static void activate (GtkApplication* app, gpointer user_data) {
   wa->window = window;
   wa->app = app;
 
-  instruction_label = gtk_label_new("Directions: \nChose a valid .wav file and a new window showing the wave function of the .wav file will be shown.\nAny number of .wav files may be opened simultaneously.");
+  instruction_label = gtk_label_new(
+                                    "Directions: \n\
+Chose a valid .wav file and a new window showing the wave \
+function of the .wav file will be shown.\n\
+Any number of .wav files may be opened simultaneously.\n\n\
+If there is a parse error, no new window will be created.");
   gtk_box_pack_start(GTK_BOX(vbox), instruction_label, TRUE, TRUE, 0);
 
   button_box = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);

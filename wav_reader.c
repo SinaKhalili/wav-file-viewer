@@ -125,7 +125,7 @@ wav_file_t parse_wav_file(char* filename){
   wav_file.num_samples = (wav_file.data_size*8) / wav_file.bits_per_sample;
   printf("Number of samples is: %d\n", wav_file.num_samples);
 
-  /* Malloc some data and copy it in */
+  /* malloc some data and copy it in */
   wav_file.data = malloc( (wav_file.bits_per_sample/8) * wav_file.num_samples);
   res = fread(wav_file.data, wav_file.bits_per_sample/8, wav_file.num_samples, wav_file.fd);
 
