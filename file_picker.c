@@ -4,7 +4,7 @@
 #include<gtk/gtk.h>
 #include"wav_reader.h"
 
-// The following struct is used to store a filename and a window instance
+/* The following struct is used to store a filename and a window instance */
 typedef struct window_app_t {
     GtkWidget* window;
     GtkApplication* app;
