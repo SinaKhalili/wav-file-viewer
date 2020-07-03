@@ -1,6 +1,7 @@
-#include <stdio.h>
-#include <gmodule.h>
-#include <gtk/gtk.h>
+#include<stdio.h>
+#include<gmodule.h>
+#include<gtk/gtk.h>
+#include"wav_reader.h"
 
 // The following struct is used to store a filename and a window instance
 typedef struct window_app_t {
@@ -56,6 +57,9 @@ static void create_new_wave_window(GtkApplication* app, char* filename) {
 
   vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   gtk_container_add(GTK_CONTAINER(window_new), vbox);
+
+  wav_file_t wav_file = parse_wav_file(filename);
+  printf("Number of data channels: %d \n", wav_file.num_channels);
 
   instruction_label = gtk_label_new(filename); /* label is just the filename */
   gtk_box_pack_start(GTK_BOX(vbox), instruction_label, TRUE, TRUE, 0);

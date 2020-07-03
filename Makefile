@@ -1,8 +1,12 @@
 CFLAGS=-Werror -Wall
 GTKFLAGS=`pkg-config --cflags gtk+-3.0`
 GTKLIBS=`pkg-config --libs gtk+-3.0`
-NAME=main.c
+FILES=file_picker.c wav_reader.c
 OUTPUT=main
+
+all:
+	gcc $(CFLAGS) $(GTKFLAGS) $(FILES) -o wav_analyzer $(GTKLIBS)
+	./wav_analyzer
 
 file_picker: file_picker.c
 	gcc $(CFLAGS) $(GTKFLAGS) file_picker.c -o file_picker $(GTKLIBS)
