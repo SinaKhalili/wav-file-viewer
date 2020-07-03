@@ -35,19 +35,20 @@ gboolean draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data) {
     float value;
     if(wav_file.data[i] >= 0){
       float percentage_distance = (float) wav_file.data[i] / 32768.0;
-      if(curr_step < mid_width){
-        percentage_distance *= (curr_step/mid_width); /*Fading out*/
-      } else {
+      if(curr_step < mid_width)
+        percentage_distance *= (curr_step/mid_width); /*Fading in*/
+      else
         percentage_distance *= (mid_width/curr_step); /*Fading out*/
-      }
+
       value = (percentage_distance * (mid_height)) + (mid_height);
-    } else {
+    }
+    else {
       float percentage_distance = (float) wav_file.data[i] / -32767.0;
-      if(curr_step < mid_width){
-        percentage_distance *= (curr_step/mid_width); /*Fading out*/
-      } else {
+      if(curr_step < mid_width)
+        percentage_distance *= (curr_step/mid_width); /*Fading in*/
+      else
         percentage_distance *= (mid_width/curr_step); /*Fading out*/
-      }
+
       value = (mid_height) - (percentage_distance * (mid_height));
     }
     cairo_line_to(cr, curr_step, value);
